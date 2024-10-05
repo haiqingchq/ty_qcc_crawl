@@ -11,7 +11,7 @@ from playwright.sync_api import Page
 from playwright.sync_api import Playwright
 
 from config import User_Agent, Disable_Blink_Features
-from config import qcc_cookie_path, qcc_search_url, qcc_login_url, qcc_login_target_url, qcc_search_target, delay
+from config import qcc_cookie_path, qcc_search_url, qcc_login_url, qcc_login_target_url, qcc_search_target, DELAY
 from crawl.base import Crawler, CreditCrawl, ScreenshotCrawl
 from crawl.common import ExcelHandler
 
@@ -32,7 +32,7 @@ class QCCCrawlerBase(Crawler):
             # 尝试进入到搜索页面中，获取 登录/注册 字样
             page.goto(qcc_search_url)
             page.wait_for_load_state("load")
-            time.sleep(delay)
+            time.sleep(DELAY)
             if page.locator(".close").is_visible():
                 page.locator(".close").click()
             content = page.query_selector_all("text='登录/注册'")
@@ -79,7 +79,7 @@ class QCCCrawlerBase(Crawler):
             # 2、如果存在就尝试进入这个主页
             page.goto(qcc_search_url)
             page.wait_for_load_state("load")
-            time.sleep(delay)  # 页面加载需要时间，加载完成就定位元素，会导致没有定位到元素直接进入未登录得分支
+            time.sleep(DELAY)  # 页面加载需要时间，加载完成就定位元素，会导致没有定位到元素直接进入未登录得分支
             if page.locator(".close").is_visible():
                 page.locator(".close").click()
             # 3、进入主页之后，首先要判断这个登录状态是否失效
@@ -137,7 +137,7 @@ class QCCCreditCrawl(CreditCrawl, QCCCrawlerBase):
         page.locator('#searchKey').fill(keyword)
         page.locator('#searchKey').press("Enter")
         page.wait_for_load_state("load")
-        time.sleep(delay)
+        time.sleep(DELAY)
 
         # 4、在页面中获取到我们需要的截图的链接
         html = page.content()
@@ -167,7 +167,7 @@ class QCCScreenshotCrawl(ScreenshotCrawl, QCCCrawlerBase):
         page.locator('#searchKey').fill(keyword)
         page.locator('#searchKey').press("Enter")
         page.wait_for_load_state("load")
-        time.sleep(delay)
+        time.sleep(DELAY)
 
         # 4、在页面中获取到我们需要的截图的链接
         html = page.content()

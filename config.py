@@ -11,7 +11,7 @@ DIRNAME = current_datetime.strftime("%Y-%m-%d")
 """
 base_path = os.path.dirname(os.path.abspath(__file__))
 
-# 已经爬取，截图成功的记录保存地址
+# 已经爬取，截图记录保存地址
 history_dir = os.path.join(base_path, "record/history")
 if not os.path.exists(history_dir):
     os.mkdir(history_dir)
@@ -90,9 +90,9 @@ qcc_login_target_url = 'https://www.qcc.com/login'
         1、screenshot_delay 1-2 s, 设置比较短的话，会截取到未加载完成的图片
         2、delay 是跳转页面之后的等待时长，0.5 - 2 s，这个跟网络速度有关系
 """
-screenshot_delay = 1
+SCREENSHOT_DELAY = 1
 
-delay = 1
+DELAY = 1
 
 """
     选择平台的登录方式：

@@ -8,7 +8,7 @@ from playwright.sync_api import Page
 from playwright.sync_api import Playwright
 
 from config import User_Agent, Disable_Blink_Features
-from config import ty_cookie_path, ty_login_url, ty_search_url, ty_search_target, delay, ty_username, ty_password
+from config import ty_cookie_path, ty_login_url, ty_search_url, ty_search_target, DELAY, ty_username, ty_password
 from crawl.base import Crawler, CreditCrawl, ScreenshotCrawl
 from crawl.common import ExcelHandler
 
@@ -34,7 +34,7 @@ class TYCrawlerBase(Crawler):
 
             page.goto(ty_search_url)
             page.wait_for_load_state("load")
-            time.sleep(delay)
+            time.sleep(DELAY)
 
             content = page.query_selector_all("text='登录/注册'")
             if content:
@@ -74,7 +74,7 @@ class TYCrawlerBase(Crawler):
             page.goto(ty_search_url)
             # 3、进入主页之后，首先要判断这个登录状态是否失效
             page.wait_for_load_state("load")
-            time.sleep(delay)  # 页面加载需要时间，加载完成就定位元素，会导致没有定位到元素直接进入未登录得分支
+            time.sleep(DELAY)  # 页面加载需要时间，加载完成就定位元素，会导致没有定位到元素直接进入未登录得分支
             content = page.query_selector_all("text='登录/注册'")
             if content:
                 # 4、如果存在，就说明登录状态已经失效了，需要重新登录
@@ -134,7 +134,7 @@ class TyCreditCrawl(CreditCrawl, TYCrawlerBase):
         page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").fill(keyword)
         page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").press("Enter")
         page.wait_for_load_state("load")
-        time.sleep(delay)
+        time.sleep(DELAY)
 
         html = page.content()
         pattern = re.compile(ty_search_target)
@@ -160,7 +160,7 @@ class TYScreenshotCrawl(ScreenshotCrawl, TYCrawlerBase):
         page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").fill(keyword)
         page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").press("Enter")
         page.wait_for_load_state("load")
-        time.sleep(delay)
+        time.sleep(DELAY)
 
         html = page.content()
         pattern = re.compile(ty_search_target)

@@ -8,7 +8,7 @@ from playwright.sync_api import Playwright
 from tqdm import tqdm
 
 from config import MIN_JS_PATH, HEADLESS, Disable_Blink_Features, User_Agent
-from config import screenshot_history_path, credits_history_path, base_path, output_path, screenshot_delay
+from config import screenshot_history_path, credits_history_path, base_path, output_path, SCREENSHOT_DELAY
 from crawl.common import ExcelHandler
 
 """
@@ -182,7 +182,7 @@ class ScreenshotCrawl(Crawler):
     def screenshot(url: str, page: Page, filename: str):
         page.goto(url)
         page.wait_for_load_state("load")
-        time.sleep(screenshot_delay)
+        time.sleep(SCREENSHOT_DELAY)
         page.mouse.wheel(0, 800)
-        time.sleep(screenshot_delay)
+        time.sleep(SCREENSHOT_DELAY)
         page.screenshot(path=os.path.join(base_path, output_path.format(filename)))
