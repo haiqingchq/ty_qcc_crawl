@@ -29,10 +29,10 @@ if not os.path.exists(UNDO_PATH):
     os.makedirs(UNDO_PATH)
 
 # 输出截图的位置
-out_dir = os.path.join(base_path, 'out')
+out_dir = os.path.join(base_path, 'out/screenshot')
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
-output_path = os.path.join(base_path, 'out/{}.png')
+output_path = os.path.join(out_dir, '{}.png')
 
 """
     获取项目启动的时间，用来当作统一的文件名和目录名
@@ -126,9 +126,9 @@ User_Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 Disable_Blink_Features = "AutomationControlled"
 
 # 是否开启有头浏览器进行爬取
-HEADLESS = True
+HEADLESS = False
 
 # 两种功能，选择哪一种运行
 # 1、截图功能
 # 2、补充社会信用代码功能
-OPTION = 2
+OPTION = 1

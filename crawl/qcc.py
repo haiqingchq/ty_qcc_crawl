@@ -17,10 +17,10 @@ from crawl.common import ExcelHandler
 
 
 class QCCCrawlerBase(Crawler):
+    cookie_path = qcc_cookie_path
 
     def __init__(self, excel_path: str):
         self.excel_handler = ExcelHandler(excel_path)
-        self.cookie_path = qcc_cookie_path
 
     def check_login(self, playwright: Playwright):
         if os.path.exists(self.cookie_path):

@@ -77,7 +77,8 @@ class Crawler(StartInterface):
     def execute_by_custom(self, *args, **kwargs):
         pass
 
-    def read_history_list(self):
+    @staticmethod
+    def read_history_list():
         """
         读取历史爬取的企业名称，避免重复爬取
         :return:

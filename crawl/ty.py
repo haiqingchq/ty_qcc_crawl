@@ -14,9 +14,10 @@ from crawl.common import ExcelHandler
 
 
 class TYCrawlerBase(Crawler):
+    cookie_path = ty_cookie_path
+
     def __init__(self, excel_path):
         self.excel_handler = ExcelHandler(excel_path)
-        self.cookie_path = ty_cookie_path
 
     def check_login(self, playwright: Playwright):
         """
