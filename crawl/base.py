@@ -8,7 +8,7 @@ from playwright.sync_api import Playwright
 from tqdm import tqdm
 
 from config import MIN_JS_PATH, HEADLESS, Disable_Blink_Features, User_Agent
-from config import screenshot_history_path, credits_history_path, base_path, output_path, SCREENSHOT_DELAY
+from config import screenshot_history_path, credits_history_path, base_path, SCREENSHOT_OUT_PATH, SCREENSHOT_DELAY
 from crawl.common import ExcelHandler
 
 """
@@ -96,13 +96,14 @@ class CreditCrawl(Crawler):
         file = open(credits_history_path, 'a', encoding='utf-8')
 
         business_list, credit_list = self.excel_handler.get_company_info_v1()
-
+        target_dict = {}
         for business, credit in tqdm(zip(business_list, credit_list), desc="当前进度",
                                      unit="file", total=len(business_list)):
             if business not in history_list:
                 try:
                     if pd.isna(credit):
-                        self.execute_by_custom(keyword=business, page=page)
+                        credit = self.execute_by_custom(keyword=business, page=page)
+                        target_dict[business] = credit
                     else:
                         continue
                     file.write(f'{business}\n')
@@ -115,6 +116,7 @@ class CreditCrawl(Crawler):
                     continue
             else:
                 continue
+        self.excel_handler.save_company_info(target_dict=target_dict)
         file.close()
         context.close()
         browser.close()
@@ -186,4 +188,4 @@ class ScreenshotCrawl(Crawler):
         time.sleep(SCREENSHOT_DELAY)
         page.mouse.wheel(0, 800)
         time.sleep(SCREENSHOT_DELAY)
-        page.screenshot(path=os.path.join(base_path, output_path.format(filename)))
+        page.screenshot(path=os.path.join(base_path, SCREENSHOT_OUT_PATH.format(filename)))

@@ -3,7 +3,7 @@ import os
 
 import pandas as pd
 
-from config import OPTION
+from config import OPTION, BUSINESS_NAME, CREDIT_NAME, NAMED
 
 
 def is_excel_file(file_path):
@@ -33,8 +33,8 @@ class ExcelHandler:
         判断excel文件，文件格式是否存在问题，是否包含：借款人企业名称， 社会统一信用代码， 命名 这几个文件头
         :return:
         """
-        required_columns = ['借款人企业名称', '社会统一信用代码', '命名'] if OPTION == 1 \
-            else ['借款人企业名称', '社会统一信用代码']
+        required_columns = [BUSINESS_NAME, CREDIT_NAME, NAMED] if OPTION == 1 \
+            else [BUSINESS_NAME, CREDIT_NAME]
 
         for column in required_columns:
             if column not in self.df.columns:
@@ -46,26 +46,30 @@ class ExcelHandler:
         :return:
         """
 
-        business_list = self.df['借款人企业名称']
-        credit_list = self.df['社会统一信用代码']
+        business_list = self.df[BUSINESS_NAME]
+        credit_list = self.df[CREDIT_NAME]
 
         return business_list, credit_list
 
     def get_company_info_v2(self):
-        business_list = self.df['借款人企业名称']
-        credit_list = self.df['社会统一信用代码']
-        filename_list = self.df['命名']
+        business_list = self.df[BUSINESS_NAME]
+        credit_list = self.df[CREDIT_NAME]
+        filename_list = self.df[NAMED]
 
         return business_list, credit_list, filename_list
 
     # 将查询到的社会统一信用代码存入到Excel文件中
-    def save_company_info(self, business_list, credit_list):
+    def save_company_info(self, target_dict: [str, str]):
         """
-            将查询到的社会信用统一代码更新到self.df中，最后将self.df输出到本地
-            这里要指定文件的名字，但是
-        :param business_list:
-        :param credit_list:
+        :param target_dict:
         :return:
         """
-        self.df.to_excel()
+        # 1、读取文件
+        df = pd.read_excel(self.excel_path)
+        # 2、将内容更新到文件中
+        for business, credit in target_dict.items():
+            index = df.loc[df[BUSINESS_NAME] == business].index[0]
+            df.at[index, CREDIT_NAME] = credit
 
+        # 3、将文件输出到指定位置
+        df.to_excel(self.excel_path, index=False)

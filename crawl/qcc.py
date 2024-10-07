@@ -120,7 +120,7 @@ class QCCCreditCrawl(CreditCrawl, QCCCrawlerBase):
         page.wait_for_load_state("load")
         credit = page.query_selector("table").query_selector_all("tr")[0].query_selector_all("td")[1].text_content()
         credit = credit.replace("复制", "")
-        print(credit)
+        return credit
 
     def execute_by_custom(self, page: Page, keyword: str, *args, **kwargs):
         """已经登录"""

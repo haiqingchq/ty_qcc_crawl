@@ -122,7 +122,7 @@ class TyCreditCrawl(CreditCrawl, TYCrawlerBase):
         page.goto(url)
         page.wait_for_load_state("load")
         target = page.query_selector("tbody").query_selector_all("tr")[3].query_selector_all('td')[1].text_content()
-        print(target)
+        return target
 
     def execute_by_custom(self, page: Page, keyword: str, *args, **kwargs):
         """已经登录"""
@@ -143,7 +143,8 @@ class TyCreditCrawl(CreditCrawl, TYCrawlerBase):
         # 3、跳转链接，并截图
         if match:
             next_url = match.group()
-            self.get_credit_from_page(url=next_url, page=page)
+            credit = self.get_credit_from_page(url=next_url, page=page)
+            return credit
         else:
             # 在天眼中没有找到该企业
             raise AttributeError
