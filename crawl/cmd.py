@@ -1,4 +1,5 @@
 import os.path
+from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 from playwright.sync_api import sync_playwright
@@ -43,8 +44,26 @@ class Actuator:
         self.qcc_crawler.run(self.playwright)
 
     def start(self):
+        """
+        使用单线程模式启动爬虫项目
+        :return:
+        """
         self.login()
         self.start_crawlers()
+
+    def thread_start(self):
+        """
+        这里是使用多线程模式启动爬虫项目
+        需要解决的问题：
+            1、什么任务是没做的，什么任务是做了的。
+            2、多个线程如何避免重复执行相同的代码
+
+        :return:
+        """
+        self.login()
+        with ThreadPoolExecutor() as executor:
+            for _ in range(2):
+                executor.submit(self.start_crawlers)
 
     def close(self):
         self.playwright.stop()

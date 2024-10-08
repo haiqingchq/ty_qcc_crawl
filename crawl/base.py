@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 from playwright.sync_api import Page
 from playwright.sync_api import Playwright
+from playwright.sync_api import sync_playwright
 from tqdm import tqdm
 
 from config import MIN_JS_PATH, HEADLESS, Disable_Blink_Features, User_Agent
@@ -62,13 +63,12 @@ class Crawler(StartInterface):
         :param playwright:
         :return:
         """
+        playwright = sync_playwright().start()
         bs = playwright.chromium.launch(headless=HEADLESS, args=[f'--disable-blink-features={Disable_Blink_Features}',
                                                                  f'--user-agent={User_Agent}'])
-
         ctx = bs.new_context(storage_state=self.cookie_path)
         pg = ctx.new_page()
         pg.add_init_script(self.stealth_js)
-
         return pg, bs, ctx
 
     def run(self, playwright: Playwright):

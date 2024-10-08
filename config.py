@@ -107,7 +107,7 @@ DELAY = 1
             - 账号密码登录暂时处于测试开发阶段，暂时不可用
             - 需要将账号密码填写到下方
 """
-LOGIN_TAP = "PASSWORD"
+LOGIN_TAP = "QRCODE"
 
 # 天眼 账号 密码
 TY_USERNAME = '17773059673'
