@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from datetime import datetime
-
+from tempfile import gettempdir
 current_datetime = datetime.now()
 FILENAME = current_datetime.strftime("%H-%M-%S")
 DIRNAME = current_datetime.strftime("%Y-%m-%d")
@@ -53,18 +53,13 @@ CURRENT_ERR_PATH = os.path.join(CURRENT_ERR_DIR, FILENAME)
 if not os.path.exists(CURRENT_ERR_DIR):
     os.makedirs(CURRENT_ERR_DIR)
 """
-    登录状态保存位置：
+    登录状态保存位置：直接保存在当前操作系统的Temp目录中，方便管理
         1、ty_cookie_path 天眼的登录状态保存路径
         2、qcc_cookie_path 企查查登录状态保存路径
 """
-ty_cookie_dir = os.path.join(base_path, 'cookie/tianyan')
-qcc_cookie_dir = os.path.join(base_path, 'cookie/qcc')
-if not os.path.exists(ty_cookie_dir):
-    os.makedirs(ty_cookie_dir)
-if not os.path.exists(qcc_cookie_dir):
-    os.makedirs(qcc_cookie_dir)
-ty_cookie_path = os.path.join(ty_cookie_dir, 'state.json')
-qcc_cookie_path = os.path.join(qcc_cookie_dir, 'state.json')
+temp_dir = gettempdir()
+ty_cookie_path = os.path.join(temp_dir, 'ty.json')
+qcc_cookie_path = os.path.join(temp_dir, 'qcc.json')
 
 """
     用来将Webdriver的属性置空的文件路径
@@ -112,15 +107,15 @@ DELAY = 1
             - 账号密码登录暂时处于测试开发阶段，暂时不可用
             - 需要将账号密码填写到下方
 """
-LOGIN_TAP = "QRCODE"
+LOGIN_TAP = "PASSWORD"
 
 # 天眼 账号 密码
-ty_username = ''
-ty_password = ''
+TY_USERNAME = '17773059673'
+TY_PASSWORD = 'chq20030306'
 
 # 企查查 账号 密码
-qcc_username = ''
-qcc_password = ''
+QCC_USERNAME = '17773059673'
+QCC_PASSWORD = 'chq20030306'
 
 """
     异常重启功能的设置
@@ -137,13 +132,18 @@ User_Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 Disable_Blink_Features = "AutomationControlled"
 
 # 是否开启有头浏览器进行爬取
-HEADLESS = True
+HEADLESS = False
 
 # 两种功能，选择哪一种运行
 # 1、截图功能
 # 2、补充社会信用代码功能
-OPTION = 2
-
+OPTION = None
+while True:
+    OPTION = eval(input("\033[91m请输入需要使用的功能："))
+    if OPTION in [1, 2]:
+        break
+    else:
+        pass
 """
     指定Excel文件的文件头名称
 """

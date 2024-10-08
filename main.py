@@ -52,7 +52,7 @@ def main():
 
     end_time = time.time()
     time_taken = end_time - start_time
-    print(f'\033[91m共耗时：{time_taken:.1f}秒({time_taken/60:.1f}分钟)')
+    print(f'\033[91m共耗时：{time_taken:.1f}秒({time_taken / 60:.1f}分钟)')
 
 
 if __name__ == "__main__":

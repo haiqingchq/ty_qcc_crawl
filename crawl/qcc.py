@@ -10,6 +10,7 @@ import time
 from playwright.sync_api import Page
 from playwright.sync_api import Playwright
 
+from config import QCC_USERNAME, QCC_PASSWORD
 from config import User_Agent, Disable_Blink_Features
 from config import qcc_cookie_path, qcc_search_url, qcc_login_url, qcc_login_target_url, qcc_search_target, DELAY
 from crawl.base import Crawler, CreditCrawl, ScreenshotCrawl
@@ -89,8 +90,8 @@ class QCCCrawlerBase(Crawler):
                 page.goto(qcc_login_url)
                 page.locator(".login-change").click()
                 page.query_selector_all('text="密码登录"')[0].click()
-                page.locator('input[name="phone-number"').fill("17773059673")
-                page.locator('input[name="password"').fill("chq20030306")
+                page.locator('input[name="phone-number"').fill(QCC_USERNAME)
+                page.locator('input[name="password"').fill(QCC_PASSWORD)
                 page.wait_for_url(qcc_login_target_url)
                 page.context.storage_state(path=self.cookie_path)
         else:

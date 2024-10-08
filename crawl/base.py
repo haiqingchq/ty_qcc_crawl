@@ -97,26 +97,29 @@ class CreditCrawl(Crawler):
 
         business_list, credit_list = self.excel_handler.get_company_info_v1()
         target_dict = {}
-        for business, credit in tqdm(zip(business_list, credit_list), desc="当前进度",
-                                     unit="file", total=len(business_list)):
-            if business not in history_list:
-                try:
-                    if pd.isna(credit):
-                        credit = self.execute_by_custom(keyword=business, page=page)
-                        target_dict[business] = credit
-                    else:
+        # 这里嵌套了两个try，主要是为了在执行过程中报错，可以将已经查询到的结果落盘，防止白做
+        try:
+            for business, credit in tqdm(zip(business_list, credit_list), desc="当前进度",
+                                         unit="file", total=len(business_list)):
+                if business not in history_list:
+                    try:
+                        if pd.isna(credit):
+                            credit = self.execute_by_custom(keyword=business, page=page)
+                            target_dict[business] = credit
+                        else:
+                            continue
+                        file.write(f'{business}\n')
+                    except AttributeError as e:
+                        """
+                            出现这个错误的情况有两种：
+                                1、出现了访问的限制，导致没有进入到指定的页面
+                                2、在qcc中不存在这家公司
+                        """
                         continue
-                    file.write(f'{business}\n')
-                except AttributeError as e:
-                    """
-                        出现这个错误的情况有两种：
-                            1、出现了访问的限制，导致没有进入到指定的页面
-                            2、在qcc中不存在这家公司
-                    """
+                else:
                     continue
-            else:
-                continue
-        self.excel_handler.save_company_info(target_dict=target_dict)
+        finally:
+            self.excel_handler.save_company_info(target_dict=target_dict)
         file.close()
         context.close()
         browser.close()
@@ -188,4 +191,4 @@ class ScreenshotCrawl(Crawler):
         time.sleep(SCREENSHOT_DELAY)
         page.mouse.wheel(0, 800)
         time.sleep(SCREENSHOT_DELAY)
-        page.screenshot(path=os.path.join(base_path, SCREENSHOT_OUT_PATH.format(filename)))
+        page.screenshot(path=str(os.path.join(base_path, SCREENSHOT_OUT_PATH.format(filename))))

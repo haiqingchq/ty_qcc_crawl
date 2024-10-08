@@ -8,7 +8,7 @@ from playwright.sync_api import Page
 from playwright.sync_api import Playwright
 
 from config import User_Agent, Disable_Blink_Features
-from config import ty_cookie_path, ty_login_url, ty_search_url, ty_search_target, DELAY, ty_username, ty_password
+from config import ty_cookie_path, ty_login_url, ty_search_url, ty_search_target, DELAY, TY_USERNAME, TY_PASSWORD
 from crawl.base import Crawler, CreditCrawl, ScreenshotCrawl
 from crawl.common import ExcelHandler
 
@@ -83,8 +83,8 @@ class TYCrawlerBase(Crawler):
                 # 5、输入账号密码登录一下
                 page.locator(".toggle_box.-qrcode").click()
                 page.query_selector_all("text='密码登录'")[0].click()
-                page.locator("#mobile").fill(ty_username)
-                page.locator("#password").fill(ty_password)
+                page.locator("#mobile").fill(TY_USERNAME)
+                page.locator("#password").fill(TY_PASSWORD)
 
                 # 6、等待登录成功
                 page.wait_for_url(ty_search_url)
@@ -121,7 +121,18 @@ class TyCreditCrawl(CreditCrawl, TYCrawlerBase):
     def get_credit_from_page(self, page: Page, url: str):
         page.goto(url)
         page.wait_for_load_state("load")
-        target = page.query_selector("tbody").query_selector_all("tr")[3].query_selector_all('td')[1].text_content()
+        # 获取到tbody
+        tbody = page.query_selector("tbody")
+        # 获取到这个tbody下面有多少个tr
+        num_trs = len(tbody.query_selector_all("tr"))
+
+        """
+            这里工商信息的表格存在一些差异，所以这里需要针对表格的差异做出不同的提取操作
+        """
+        if num_trs == 10:
+            target = tbody.query_selector_all("tr")[3].query_selector_all('td')[1].text_content()
+        else:
+            target = tbody.query_selector_all("tr")[4].query_selector_all('td')[1].text_content()
         return target
 
     def execute_by_custom(self, page: Page, keyword: str, *args, **kwargs):
