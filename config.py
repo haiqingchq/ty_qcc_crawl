@@ -11,12 +11,12 @@ DIRNAME = current_datetime.strftime("%Y-%m-%d")
 """
 base_path = os.path.dirname(os.path.abspath(__file__))
 
-# 已经爬取，截图记录保存地址
+# 完成任务记录保存地址
 history_dir = os.path.join(base_path, "record/history")
 if not os.path.exists(history_dir):
     os.mkdir(history_dir)
-screenshot_history_path = os.path.join(base_path, 'record/history/screenshot.txt')
-credits_history_path = os.path.join(base_path, 'record/history/credits.txt')
+SCREENSHOT_HISTORY_PATH = os.path.join(base_path, 'record/history/screenshot.txt')
+CREDITS_HISTORY_PATH = os.path.join(base_path, 'record/history/credits.txt')
 
 # 错误保存地址
 error_log_path = os.path.join(base_path, 'record/error/')

@@ -44,7 +44,9 @@ def main():
             time.sleep(attempt_delay)
 
     # 在整个程序结束之后，再检测是否没有爬取成功的公司，写入到文件中
-    actuator.check_un_crawled_companies(excel_path=excel_path)
+    if OPTION == 1:
+        # 只有在进行截图爬取的时候才需要进行这个操作，因为社会信用统一代码可以直接通过查看文件就能看到未完成的公司信息
+        actuator.check_un_crawled_companies(excel_path=excel_path)
     if attempts == max_attempts:
         print("\033[91m达到最大尝试次数，任务无法启动")
 

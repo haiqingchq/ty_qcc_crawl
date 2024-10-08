@@ -8,7 +8,7 @@ from playwright.sync_api import Playwright
 from tqdm import tqdm
 
 from config import MIN_JS_PATH, HEADLESS, Disable_Blink_Features, User_Agent
-from config import screenshot_history_path, credits_history_path, base_path, SCREENSHOT_OUT_PATH, SCREENSHOT_DELAY
+from config import SCREENSHOT_HISTORY_PATH, CREDITS_HISTORY_PATH, base_path, SCREENSHOT_OUT_PATH, SCREENSHOT_DELAY
 from crawl.common import ExcelHandler
 
 """
@@ -93,7 +93,7 @@ class CreditCrawl(Crawler):
     def run(self, playwright: Playwright):
         page, browser, context = self.init_page(playwright=playwright)
         history_list = self.read_history_list()
-        file = open(credits_history_path, 'a', encoding='utf-8')
+        file = open(CREDITS_HISTORY_PATH, 'a', encoding='utf-8')
 
         business_list, credit_list = self.excel_handler.get_company_info_v1()
         target_dict = {}
@@ -133,8 +133,8 @@ class CreditCrawl(Crawler):
         读取历史爬取的企业名称，避免重复爬取
         :return:
         """
-        if os.path.exists(credits_history_path):
-            with open(credits_history_path, 'r', encoding='utf-8') as file:
+        if os.path.exists(CREDITS_HISTORY_PATH):
+            with open(CREDITS_HISTORY_PATH, 'r', encoding='utf-8') as file:
                 lines = file.readlines()
             return [line.strip() for line in lines]
         return []
@@ -144,7 +144,7 @@ class ScreenshotCrawl(Crawler):
     def run(self, playwright: Playwright):
         page, browser, context = self.init_page(playwright=playwright)
         history_list = self.read_history_list()
-        file = open(screenshot_history_path, 'a', encoding='utf-8')
+        file = open(SCREENSHOT_HISTORY_PATH, 'a', encoding='utf-8')
 
         business_list, credit_list, filename_list = self.excel_handler.get_company_info_v2()
 
@@ -175,8 +175,8 @@ class ScreenshotCrawl(Crawler):
 
     @staticmethod
     def read_history_list():
-        if os.path.exists(screenshot_history_path):
-            with open(screenshot_history_path, 'r', encoding='utf-8') as file:
+        if os.path.exists(SCREENSHOT_HISTORY_PATH):
+            with open(SCREENSHOT_HISTORY_PATH, 'r', encoding='utf-8') as file:
                 lines = file.readlines()
             return [line.strip() for line in lines]
         return []
