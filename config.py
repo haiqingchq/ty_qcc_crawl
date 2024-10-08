@@ -12,6 +12,9 @@ DIRNAME = current_datetime.strftime("%Y-%m-%d")
 base_path = os.path.dirname(os.path.abspath(__file__))
 
 # 完成任务记录保存地址
+record_dir = os.path.join(base_path, "record")
+if not os.path.exists(record_dir):
+    os.mkdir(record_dir)
 history_dir = os.path.join(base_path, "record/history")
 if not os.path.exists(history_dir):
     os.mkdir(history_dir)
