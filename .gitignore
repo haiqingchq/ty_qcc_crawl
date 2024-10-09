@@ -1,5 +1,6 @@
 .idea/
 out/
+data/chrome-win
 record/
 cookie/
 __pycache__/

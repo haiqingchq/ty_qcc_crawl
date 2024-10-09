@@ -109,7 +109,7 @@ DELAY = 1
             - 账号密码登录暂时处于测试开发阶段，暂时不可用
             - 需要将账号密码填写到下方
 """
-LOGIN_TAP = "QRCODE"
+LOGIN_TAP = "PASSWORD"
 
 # 天眼 账号 密码
 TY_USERNAME = '17773059673'
@@ -163,3 +163,5 @@ CREDIT_UNDO_QUEUE = Queue()
 CREDIT_DO_QUEUE = Queue()
 
 SCREENSHOT_UNDO_QUEUE = Queue()
+
+CHROME_EXE_PATH = "data/chrome-win/chrome.exe"

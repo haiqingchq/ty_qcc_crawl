@@ -49,8 +49,8 @@ class Actuator:
             self.ty_crawler.login(self.playwright)
             self.qcc_crawler.login(self.playwright)
         elif LOGIN_TAP == "PASSWORD":
-            self.ty_crawler.login_by_password(self.playwright)
             self.qcc_crawler.login_by_password(self.playwright)
+            self.ty_crawler.login_by_password(self.playwright)
         print("\033[91m登录信息验证通过...")
 
     def start_crawlers(self):

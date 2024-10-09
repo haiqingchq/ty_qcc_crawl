@@ -59,8 +59,7 @@ def main():
     try:
         while attempts < max_attempts:
             try:
-                # actuator.thread_start()
-                time.sleep(10000)
+                actuator.thread_start()
                 break  # If the start method completes successfully, exit the loop
             except Exception as e:
                 attempts += 1

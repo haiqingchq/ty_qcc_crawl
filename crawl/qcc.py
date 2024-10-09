@@ -4,13 +4,12 @@
 """
 import os.path
 import re
-import sys
 import time
 
 from playwright.sync_api import Page
 from playwright.sync_api import Playwright
 
-from config import QCC_USERNAME, QCC_PASSWORD
+from config import CHROME_EXE_PATH, QCC_USERNAME, QCC_PASSWORD
 from config import User_Agent, Disable_Blink_Features
 from config import qcc_cookie_path, qcc_search_url, qcc_login_url, qcc_login_target_url, qcc_search_target, DELAY
 from crawl.base import Crawler, CreditCrawl, ScreenshotCrawl
@@ -25,8 +24,9 @@ class QCCCrawlerBase(Crawler):
 
     def check_login(self, playwright: Playwright):
         if os.path.exists(self.cookie_path):
-            bs = playwright.chromium.launch(headless=True, args=[f'--disable-blink-features={Disable_Blink_Features}',
-                                                                 f'--user-agent={User_Agent}'])
+            bs = playwright.chromium.launch(headless=True, executable_path=CHROME_EXE_PATH,
+                                            args=[f'--disable-blink-features={Disable_Blink_Features}',
+                                                  f'--user-agent={User_Agent}'])
             ctx = bs.new_context(storage_state=self.cookie_path)
             page = ctx.new_page()
 
@@ -54,8 +54,9 @@ class QCCCrawlerBase(Crawler):
         if self.login_flag:
             return
         else:
-            bs = playwright.chromium.launch(headless=False, args=[f'--disable-blink-features={Disable_Blink_Features}',
-                                                                  f'--user-agent={User_Agent}'])
+            bs = playwright.chromium.launch(headless=False, executable_path=CHROME_EXE_PATH,
+                                            args=[f'--disable-blink-features={Disable_Blink_Features}',
+                                                  f'--user-agent={User_Agent}'])
             ctx = bs.new_context()
             page = ctx.new_page()
 
@@ -73,46 +74,30 @@ class QCCCrawlerBase(Crawler):
         :param playwright:
         :return:
         """
-        bs = playwright.chromium.launch(headless=False)
-        if os.path.exists(self.cookie_path):
-            ctx = bs.new_context(storage_state=self.cookie_path)
-            page = ctx.new_page()
-            # 2、如果存在就尝试进入这个主页
-            page.goto(qcc_search_url)
-            page.wait_for_load_state("load")
-            time.sleep(DELAY)  # 页面加载需要时间，加载完成就定位元素，会导致没有定位到元素直接进入未登录得分支
-            if page.locator(".close").is_visible():
-                page.locator(".close").click()
-            # 3、进入主页之后，首先要判断这个登录状态是否失效
-            content = page.query_selector_all("text='登录/注册'")
-            if content:
-                # 4、如果存在，就说明登录状态已经失效了，需要重新登录
-                page.goto(qcc_login_url)
-                page.locator(".login-change").click()
-                page.query_selector_all('text="密码登录"')[0].click()
-                page.locator('input[name="phone-number"').fill(QCC_USERNAME)
-                page.locator('input[name="password"').fill(QCC_PASSWORD)
-                page.wait_for_url(qcc_login_target_url)
-                page.context.storage_state(path=self.cookie_path)
+        if self.login_flag:
+            return
         else:
+
+            bs = playwright.chromium.launch(headless=False, executable_path=CHROME_EXE_PATH,
+                                            args=[f'--disable-blink-features={Disable_Blink_Features}',
+                                                  f'--user-agent={User_Agent}'])
+
             ctx = bs.new_context()
             page = ctx.new_page()
             # 4、如果存在，就说明登录状态已经失效了，需要重新登录
             page.goto(qcc_login_url)
             page.locator(".login-change").last.click()
             page.locator(".login-tab").last.click()
-            page.locator('div.password-login_wrapper input[name="phone-number"]').first.fill("17773059673")
-            page.locator('div.password-login_wrapper input[name="password"]').first.fill("chq20030306")
+            page.query_selector_all('//input[@name="phone-number"]')[3].click()
+            page.query_selector_all('//input[@name="phone-number"]')[3].fill(QCC_USERNAME)
+            page.query_selector_all('//input[@name="password"]')[1].click()
+            page.query_selector_all('//input[@name="password"]')[1].fill(QCC_PASSWORD)
             page.wait_for_url(qcc_login_target_url)
             page.context.storage_state(path=self.cookie_path)
-        if page.query_selector_all('text="登录/注册"'):
-            print("企查查登录失败，请重新运行程序并扫码")
-            os.remove(self.cookie_path)
-            sys.exit()
 
-        page.close()
-        ctx.close()
-        bs.close()
+            page.close()
+            ctx.close()
+            bs.close()
 
     def search_and_get_url(self, page: Page, keyword: str):
         # 1、进入到搜索页面

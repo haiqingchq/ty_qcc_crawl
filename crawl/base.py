@@ -6,6 +6,7 @@ import pandas as pd
 from playwright.sync_api import sync_playwright, Page, Playwright
 from tqdm import tqdm
 
+from config import CHROME_EXE_PATH
 from config import CREDIT_UNDO_QUEUE, CREDIT_DO_QUEUE, SCREENSHOT_UNDO_QUEUE
 from config import MIN_JS_PATH, HEADLESS, Disable_Blink_Features, User_Agent, CURRENT_ERR_PATH
 from config import SCREENSHOT_HISTORY_PATH, CREDITS_HISTORY_PATH, base_path, SCREENSHOT_OUT_PATH, SCREENSHOT_DELAY
@@ -62,8 +63,9 @@ class Crawler(StartInterface):
         :return:
         """
         playwright = sync_playwright().start()
-        bs = playwright.chromium.launch(headless=HEADLESS, args=[f'--disable-blink-features={Disable_Blink_Features}',
-                                                                 f'--user-agent={User_Agent}'])
+        bs = playwright.chromium.launch(headless=HEADLESS, executable_path=CHROME_EXE_PATH,
+                                        args=[f'--disable-blink-features={Disable_Blink_Features}',
+                                              f'--user-agent={User_Agent}'])
         ctx = bs.new_context(storage_state=self.cookie_path)
         pg = ctx.new_page()
         pg.add_init_script(self.stealth_js)

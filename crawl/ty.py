@@ -6,7 +6,7 @@ import time
 from playwright.sync_api import Page
 from playwright.sync_api import Playwright
 
-from config import User_Agent, Disable_Blink_Features
+from config import User_Agent, Disable_Blink_Features, CHROME_EXE_PATH
 from config import ty_cookie_path, ty_login_url, ty_search_url, ty_search_target, DELAY, TY_USERNAME, TY_PASSWORD
 from crawl.base import Crawler, CreditCrawl, ScreenshotCrawl
 from crawl.common import ExcelHandler
@@ -24,8 +24,9 @@ class TYCrawlerBase(Crawler):
         :return: 登录成功就返回True，否则返回False
         """
 
-        bs = playwright.chromium.launch(headless=True, args=[f'--disable-blink-features={Disable_Blink_Features}',
-                                                             f'--user-agent={User_Agent}'])
+        bs = playwright.chromium.launch(headless=True, executable_path=CHROME_EXE_PATH,
+                                        args=[f'--disable-blink-features={Disable_Blink_Features}',
+                                              f'--user-agent={User_Agent}'])
 
         if os.path.exists(self.cookie_path):
             ctx = bs.new_context(storage_state=self.cookie_path)
@@ -50,8 +51,9 @@ class TYCrawlerBase(Crawler):
         if self.login_flag:
             return
         else:
-            bs = playwright.chromium.launch(headless=False, args=[f'--disable-blink-features={Disable_Blink_Features}',
-                                                                  f'--user-agent={User_Agent}'])
+            bs = playwright.chromium.launch(headless=False, executable_path=CHROME_EXE_PATH,
+                                            args=[f'--disable-blink-features={Disable_Blink_Features}',
+                                                  f'--user-agent={User_Agent}'])
             ctx = bs.new_context()
             page = ctx.new_page()
             page.add_init_script(self.stealth_js)
@@ -69,7 +71,9 @@ class TYCrawlerBase(Crawler):
         if self.login_flag:
             return
         else:
-            bs = playwright.chromium.launch(headless=False, executable_path="")
+            bs = playwright.chromium.launch(headless=False, executable_path=CHROME_EXE_PATH,
+                                            args=[f'--disable-blink-features={Disable_Blink_Features}',
+                                                  f'--user-agent={User_Agent}'])
             ctx = bs.new_context()
             page = ctx.new_page()
             # 4、如果存在，就说明登录状态已经失效了，需要重新登录
