@@ -100,3 +100,22 @@ class Actuator:
         with open(f'{filename}.txt', 'w', encoding='utf-8') as f:
             for company in uncompleted_companies:
                 f.write(f'{company}\n')
+
+    def get_undo_companies_list(self):
+        """
+
+        :return:
+        """
+        from queue import Queue
+        # 1、获取所有的公司列表
+        all_companies = self.ty_crawler.excel_handler.get_all_companies()
+        # 2、获取已经做完了
+        history_companies = self.ty_crawler.read_history_list()
+        # 3、获得到未作的
+        undo_companies = list(set(all_companies) - set(history_companies))
+        # 4、将未作的放到queue中
+        undo_queue = Queue()
+        for company in undo_companies:
+            undo_queue.put(company)
+        return undo_queue
+

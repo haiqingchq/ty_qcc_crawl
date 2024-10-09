@@ -28,6 +28,23 @@ class ExcelHandler:
         if OPTION in [1, 2]:
             self.check_excel_file()
 
+    def get_all_companies(self):
+        """
+        获得所有公司的名单
+        :return:
+        """
+        return self.df[BUSINESS_NAME]
+
+    def get_info_by_company(self, company):
+        """
+        通过 公司名称，在 df 中获得一行数据
+        :param company:
+        :return: list
+        """
+        row = self.df[self.df[BUSINESS_NAME] == company].index[0]
+        row_data = self.df.loc[row, [BUSINESS_NAME, CREDIT_NAME, NAMED]]
+        return row_data
+
     def check_excel_file(self):
         """
         判断excel文件，文件格式是否存在问题，是否包含：借款人企业名称， 社会统一信用代码， 命名 这几个文件头

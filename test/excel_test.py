@@ -1,5 +1,7 @@
 import pandas as pd
 
+from crawl.common import ExcelHandler
+
 
 def test_excel():
     df = pd.read_excel("../data/1.xlsx", engine='openpyxl')
@@ -20,5 +22,10 @@ def test_finally():
         print(int_list)
 
 
+def test_get_company_by_name():
+    excel_handle = ExcelHandler("../data/1.xlsx")
+    excel_handle.get_info_by_company(company="围金坊（广州）服饰有限公司")
+
+
 if __name__ == '__main__':
-    test_finally()
+    test_get_company_by_name()

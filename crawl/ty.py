@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os.path
 import re
-import sys
 import time
 
 from playwright.sync_api import Page
@@ -67,29 +66,10 @@ class TYCrawlerBase(Crawler):
     def login_by_password(self, playwright: Playwright):
         """做一个使用账号密码登录的功能"""
         # 1、首先判断state.json文件是否存在
-        bs = playwright.chromium.launch(headless=False)
-        if os.path.exists(self.cookie_path):
-            ctx = bs.new_context(storage_state=self.cookie_path)
-            page = ctx.new_page()
-            # 2、如果存在就尝试进入这个主页
-            page.goto(ty_search_url)
-            # 3、进入主页之后，首先要判断这个登录状态是否失效
-            page.wait_for_load_state("load")
-            time.sleep(DELAY)  # 页面加载需要时间，加载完成就定位元素，会导致没有定位到元素直接进入未登录得分支
-            content = page.query_selector_all("text='登录/注册'")
-            if content:
-                # 4、如果存在，就说明登录状态已经失效了，需要重新登录
-                page.goto(ty_login_url)
-                # 5、输入账号密码登录一下
-                page.locator(".toggle_box.-qrcode").click()
-                page.query_selector_all("text='密码登录'")[0].click()
-                page.locator("#mobile").fill(TY_USERNAME)
-                page.locator("#password").fill(TY_PASSWORD)
-
-                # 6、等待登录成功
-                page.wait_for_url(ty_search_url)
-                ctx.storage_state(path=self.cookie_path)
+        if self.login_flag:
+            return
         else:
+            bs = playwright.chromium.launch(headless=False)
             ctx = bs.new_context()
             page = ctx.new_page()
             # 4、如果存在，就说明登录状态已经失效了，需要重新登录
@@ -97,24 +77,40 @@ class TYCrawlerBase(Crawler):
             # 5、等待用户扫描二维码登录
             page.locator(".toggle_box.-qrcode").click()
             page.query_selector_all("text='密码登录'")[0].click()
-            page.locator("#mobile").fill("17773059673")
-            page.locator("#password").fill("chq20030306")
+            page.locator("#mobile").fill(TY_USERNAME)
+            page.locator("#password").fill(TY_PASSWORD)
             # 6、等待登录成功
             page.wait_for_url(ty_search_url)
             page.context.storage_state(path=self.cookie_path)
-        if page.query_selector_all('text="登录/注册"'):
-            print("天眼登录失败，请重新运行程序并扫码")
-            os.remove(self.cookie_path)
-            sys.exit()
-        page.close()
-        ctx.close()
-        bs.close()
 
-    def get_credit_from_page(self, page: Page, url: str):
-        page.goto(url)
+            page.close()
+            ctx.close()
+            bs.close()
+
+    def search_and_get_url(self, page: Page, keyword: str):
+        """
+        跳转进入到搜索页面，搜索指定关键词，然后在搜索结果中获得目标url
+        :param page:
+        :param keyword: 需要搜索的关键词
+        :return:
+        """
+        page.goto(ty_search_url)
         page.wait_for_load_state("load")
-        target = page.query_selector("tbody").query_selector_all("tr")[3].query_selector_all('td')[1].text_content()
-        print(target)
+
+        # 2、搜索指定内容
+        page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").click()
+        page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").fill(keyword)
+        page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").press("Enter")
+        page.wait_for_load_state("load")
+        time.sleep(DELAY)
+
+        html = page.content()
+        pattern = re.compile(ty_search_target)
+        match = pattern.search(html)
+        if match:
+            return match.group()
+        else:
+            raise AttributeError
 
 
 class TyCreditCrawl(CreditCrawl, TYCrawlerBase):
@@ -138,50 +134,15 @@ class TyCreditCrawl(CreditCrawl, TYCrawlerBase):
     def execute_by_custom(self, page: Page, keyword: str, *args, **kwargs):
         """已经登录"""
         # 1、尝试进入搜索页面
-        page.goto(ty_search_url)
-        page.wait_for_load_state("load")
-
-        # 2、搜索指定内容
-        page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").click()
-        page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").fill(keyword)
-        page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").press("Enter")
-        page.wait_for_load_state("load")
-        time.sleep(DELAY)
-
-        html = page.content()
-        pattern = re.compile(ty_search_target)
-        match = pattern.search(html)
+        next_url = self.search_and_get_url(page=page, keyword=keyword)
         # 3、跳转链接，并截图
-        if match:
-            next_url = match.group()
-            credit = self.get_credit_from_page(url=next_url, page=page)
-            return credit
-        else:
-            # 在天眼中没有找到该企业
-            raise AttributeError
+        credit = self.get_credit_from_page(url=next_url, page=page)
+        return credit
 
 
 class TYScreenshotCrawl(ScreenshotCrawl, TYCrawlerBase):
     def execute_by_custom(self, page: Page, keyword: str, filename: str, *args, **kwargs):
         """已经登录"""
-        # 1、尝试进入搜索页面
-        page.goto(ty_search_url)
-        page.wait_for_load_state("load")
-
-        # 2、搜索指定内容
-        page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").click()
-        page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").fill(keyword)
-        page.get_by_placeholder("请输入公司名称、老板姓名、品牌名称等").press("Enter")
-        page.wait_for_load_state("load")
-        time.sleep(DELAY)
-
-        html = page.content()
-        pattern = re.compile(ty_search_target)
-        match = pattern.search(html)
+        next_url = self.search_and_get_url(page=page, keyword=keyword)
         # 3、跳转链接，并截图
-        if match:
-            next_url = match.group()
-            self.screenshot(url=next_url, page=page, filename=filename)
-        else:
-            # 在天眼中没有找到该企业
-            raise AttributeError
+        self.screenshot(url=next_url, page=page, filename=filename)
