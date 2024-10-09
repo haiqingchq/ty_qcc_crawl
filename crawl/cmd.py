@@ -23,6 +23,7 @@ class Actuator:
         self.ty_crawler = ty_crawler
         self.qcc_crawler = qcc_crawler
         self.playwright = sync_playwright().start()
+        self.get_undo_companies_list()
 
     def login(self):
         print("\033[91m正在检查登录状态信息，请稍等...")
@@ -51,6 +52,10 @@ class Actuator:
         self.login()
         self.start_crawlers()
 
+    def thread_start_crawlers(self):
+        self.ty_crawler.thread_run()
+        self.qcc_crawler.thread_run()
+
     def thread_start(self):
         """
         这里是使用多线程模式启动爬虫项目
@@ -62,8 +67,8 @@ class Actuator:
         """
         self.login()
         with ThreadPoolExecutor() as executor:
-            for _ in range(2):
-                executor.submit(self.start_crawlers)
+            for _ in range(3):
+                executor.submit(self.thread_start_crawlers)
 
     def close(self):
         self.playwright.stop()
@@ -106,15 +111,15 @@ class Actuator:
 
         :return:
         """
-        from queue import Queue
-        # 1、获取所有的公司列表
-        all_companies = self.ty_crawler.excel_handler.get_all_companies()
-        # 2、获取已经做完了
-        history_companies = self.ty_crawler.read_history_list()
-        # 3、获得到未作的
-        undo_companies = list(set(all_companies) - set(history_companies))
-        # 4、将未作的放到queue中
-        undo_queue = Queue()
-        for company in undo_companies:
-            undo_queue.put(company)
-        return undo_queue
+        # from queue import Queue
+        # # 1、获取所有的公司列表
+        # all_companies = self.ty_crawler.excel_handler.get_all_companies()
+        # # 2、获取已经做完了
+        # history_companies = self.ty_crawler.read_history_list()
+        # # 3、获得到未作的
+        # undo_companies = list(set(all_companies) - set(history_companies))
+        # # 4、将未作的放到queue中
+        from config import UNDO_QUEUE
+        for company in self.ty_crawler.excel_handler.get_empty_credit_rows():
+            UNDO_QUEUE.put(company)
+        return UNDO_QUEUE

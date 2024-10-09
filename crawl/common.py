@@ -50,7 +50,7 @@ class ExcelHandler:
         :return: list
         """
         row = self.df[self.df[BUSINESS_NAME] == company].index[0]
-        row_data = self.df.loc[row, [BUSINESS_NAME, CREDIT_NAME, NAMED]]
+        row_data = self.df.loc[row, [BUSINESS_NAME, CREDIT_NAME, NAMED]].tolist()
         return row_data
 
     def check_excel_file(self):

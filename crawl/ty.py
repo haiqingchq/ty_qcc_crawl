@@ -69,7 +69,7 @@ class TYCrawlerBase(Crawler):
         if self.login_flag:
             return
         else:
-            bs = playwright.chromium.launch(headless=False)
+            bs = playwright.chromium.launch(headless=False, executable_path="")
             ctx = bs.new_context()
             page = ctx.new_page()
             # 4、如果存在，就说明登录状态已经失效了，需要重新登录
