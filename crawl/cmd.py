@@ -1,12 +1,11 @@
-import os.path
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 from playwright.sync_api import sync_playwright
 
-from config import LOGIN_TAP, CREDIT_UNDO_QUEUE
+from config import LOGIN_TAP, CREDIT_UNDO_QUEUE, OPTION, SCREENSHOT_UNDO_QUEUE
 from config import SCREENSHOT_OUT_DIR, NAMED, BUSINESS_NAME, SCREENSHOT_HISTORY_PATH
-from config import UNDO_PATH, FILENAME
+from config import UNDO_PATH
 from crawl.base import Crawler
 from crawl.common import get_all_file_names
 
@@ -82,8 +81,6 @@ class Actuator:
         """
         self.login()
         with ThreadPoolExecutor() as executor:
-            # for _ in range(3):
-            #     executor.submit(self.thread_start_crawlers)
             executor.map(self.ty_crawler.thread_run, range(3))
 
         with ThreadPoolExecutor() as executor:
@@ -108,20 +105,19 @@ class Actuator:
             在爬取完成之后调用
         :return:
         """
-        # 1、已经完成爬取的名单
-        completed_list = self.ty_crawler.read_history_list()
-        # 2、所有需要爬取公司的名单
-        df = pd.read_excel(excel_path)
-        all_companies = df['借款人企业名称'].to_list()
-        # 3、获取到没有完成爬取公司的名单
-        uncompleted_companies = list(set(all_companies) - set(completed_list))
+        uncompleted_companies = []
+        if OPTION == 1:
+            # 1、已经完成爬取的名单
+            completed_list = self.ty_crawler.read_history_list()
+            # 2、所有需要爬取公司的名单
+            all_companies = self.ty_crawler.excel_handler.get_all_companies()
+            # 3、获取到没有完成爬取公司的名单
+            uncompleted_companies = list(set(all_companies) - set(completed_list))
+        elif OPTION == 2:
+            uncompleted_companies = self.ty_crawler.excel_handler.get_empty_credit_rows()
 
-        # 4、创建指定文件夹，文件名
-
-        filename = os.path.join(UNDO_PATH, FILENAME)
-
-        # 5、将未完成爬取的名单写入到文件中便于后续跟进
-        with open(f'{filename}.txt', 'w', encoding='utf-8') as f:
+        # 4、将未完成爬取的名单写入到文件中便于后续跟进
+        with open(UNDO_PATH, 'w', encoding='utf-8') as f:
             for company in uncompleted_companies:
                 f.write(f'{company}\n')
 
@@ -130,8 +126,16 @@ class Actuator:
 
         :return:
         """
-        for company in self.ty_crawler.excel_handler.get_empty_credit_rows():
-            CREDIT_UNDO_QUEUE.put(company)
-        CREDIT_UNDO_QUEUE.put(0)
-        print(f"本次任务总量: {CREDIT_UNDO_QUEUE.qsize()}")
-        return CREDIT_UNDO_QUEUE
+        if OPTION == 2:
+            for company in self.ty_crawler.excel_handler.get_empty_credit_rows():
+                CREDIT_UNDO_QUEUE.put(company)
+            CREDIT_UNDO_QUEUE.put(0)
+            print(f"本次任务总量: {CREDIT_UNDO_QUEUE.qsize()}")
+        elif OPTION == 1:
+            history_list = self.ty_crawler.read_history_list()
+            all_companies = self.ty_crawler.excel_handler.get_all_companies()
+            undo_list = list(set(all_companies) - set(history_list))
+            for undo in undo_list:
+                SCREENSHOT_UNDO_QUEUE.put(undo)
+            SCREENSHOT_UNDO_QUEUE.put(0)
+            print(f"本次任务总量: {SCREENSHOT_UNDO_QUEUE.qsize()}")

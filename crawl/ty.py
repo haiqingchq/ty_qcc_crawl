@@ -138,10 +138,18 @@ class TyCreditCrawl(CreditCrawl, TYCrawlerBase):
         # 3、跳转链接，并截图
         # print(page.content())
         # time.sleep(10000)
-        credit = (page.query_selector(
-            '//div[@id="page-container"]/div/div[2]/div/div[2]/div[2]/div/div/div[3]/div[2]/div[3]/div[4]/span')
-                  .text_content())
-        return credit
+        credit = None
+        if not credit:
+            credit = page.query_selector(
+                '//div[@id="page-container"]/div/div[2]/div/div[2]/div[2]/div/div/div[3]/div[2]/div[3]/div[4]/span')
+        if not credit:
+            credit = page.query_selector(
+                '//div[@id="page-container"]/div/div[2]/div/div[2]/div[2]/div/div/div[2]/div[2]/div[3]/div[4]/span')
+        if not credit:
+            credit = page.query_selector('//main/div[2]/div[2]/div/div/div[2]/div[2]/div[2]/div[4]/span')
+        if not credit:
+            credit = page.query_selector('//main/div[2]/div[2]/div/div/div[2]/div[2]/div[3]/div[4]/span')
+        return credit.text_content()
 
 
 class TYScreenshotCrawl(ScreenshotCrawl, TYCrawlerBase):

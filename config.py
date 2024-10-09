@@ -28,9 +28,10 @@ if not os.path.exists(error_log_path):
     os.makedirs(error_log_path)
 
 # 爬取完成之后，未爬取成功的企业命名保存路径
-UNDO_PATH = os.path.join(base_path, f'record/undo/{DIRNAME}')
-if not os.path.exists(UNDO_PATH):
-    os.makedirs(UNDO_PATH)
+UNDO_DIR = os.path.join(base_path, f'record/undo/{DIRNAME}')
+UNDO_PATH = os.path.join(UNDO_DIR, f'{FILENAME}.txt')
+if not os.path.exists(UNDO_DIR):
+    os.makedirs(UNDO_DIR)
 
 # 输出截图的位置
 SCREENSHOT_OUT_DIR = os.path.join(base_path, 'out/screenshot')
@@ -160,3 +161,5 @@ from queue import Queue
 
 CREDIT_UNDO_QUEUE = Queue()
 CREDIT_DO_QUEUE = Queue()
+
+SCREENSHOT_UNDO_QUEUE = Queue()

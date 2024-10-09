@@ -6,9 +6,9 @@ import pandas as pd
 from playwright.sync_api import sync_playwright, Page, Playwright
 from tqdm import tqdm
 
-from config import MIN_JS_PATH, HEADLESS, Disable_Blink_Features, User_Agent
+from config import CREDIT_UNDO_QUEUE, CREDIT_DO_QUEUE, SCREENSHOT_UNDO_QUEUE
+from config import MIN_JS_PATH, HEADLESS, Disable_Blink_Features, User_Agent, CURRENT_ERR_PATH
 from config import SCREENSHOT_HISTORY_PATH, CREDITS_HISTORY_PATH, base_path, SCREENSHOT_OUT_PATH, SCREENSHOT_DELAY
-from config import CREDIT_UNDO_QUEUE, CREDIT_DO_QUEUE
 from crawl.common import ExcelHandler
 
 """
@@ -134,10 +134,10 @@ class CreditCrawl(Crawler):
             page, browser, context = self.init_page()
             count = 0
             while not CREDIT_UNDO_QUEUE.empty():
-                if count == 10:
+                if count == 5:
                     print(f"当前剩余：{CREDIT_UNDO_QUEUE.qsize()}")
                     count = 0
-                    time.sleep(20)
+                    time.sleep(12)
                 count += 1
                 company = CREDIT_UNDO_QUEUE.get()
                 if company == 0:
@@ -151,10 +151,12 @@ class CreditCrawl(Crawler):
                 except AttributeError as e:
                     # 当出现这个错误的时候，说明在当前的网站中没有查到这个公司，需要重新加入到队列中
                     CREDIT_UNDO_QUEUE.put(company)
+                    print(f"{company}在当前网站未找到, 错误信息为：{e}")
                     continue
                 except Exception as e:
                     CREDIT_UNDO_QUEUE.put(company)
-                    print(e)
+                    with open(f'{CURRENT_ERR_PATH}.log', 'a', encoding='utf-8') as f:
+                        f.write(f'{e}')
             page.close()
             context.close()
             browser.close()
@@ -207,37 +209,47 @@ class ScreenshotCrawl(Crawler):
         context.close()
         browser.close()
 
-    def thread_run(self):
+    def thread_run(self, thread_num):
         """
         多线程启动
         :return:
         """
-        page, browser, context = self.init_page()
-        history_list = self.read_history_list()
-        count = 0
-        while not CREDIT_UNDO_QUEUE.empty():
-            # 每执行15次的时候休息5秒钟左右，防止被检测
-            company = CREDIT_UNDO_QUEUE.get()
-            if company in history_list:
-                continue
-            if count == 5:
-                count = 0
-                time.sleep(10)
-            count += 1
-            info_list = self.excel_handler.get_info_by_company(company=company)
-            business, credit, filename = info_list[0], info_list[1], info_list[2]
-            try:
-                if business:
-                    self.execute_by_custom(keyword=business, page=page, filename=filename)
-                else:
-                    self.execute_by_custom(keyword=credit, page=page, filename=filename)
-            except AttributeError as e:
-                # 当出现这个错误的时候，说明在当前的网站中没有查到这个公司，需要重新加入到队列中
-                CREDIT_UNDO_QUEUE.put(company)
-                continue
-
-        context.close()
-        browser.close()
+        try:
+            page, browser, context = self.init_page()
+            history_list = self.read_history_list()
+            count = 0
+            while not SCREENSHOT_UNDO_QUEUE.empty():
+                # 每执行15次的时候休息5秒钟左右，防止被检测
+                company = SCREENSHOT_UNDO_QUEUE.get()
+                if company == 0:
+                    break
+                if company in history_list:
+                    continue
+                if count == 5:
+                    count = 0
+                    print(f'当前剩余：{SCREENSHOT_UNDO_QUEUE.qsize()}')
+                    time.sleep(10)
+                count += 1
+                info_list = self.excel_handler.get_info_by_company(company=company)
+                business, credit, filename = info_list[0], info_list[1], info_list[2]
+                try:
+                    if business:
+                        self.execute_by_custom(keyword=business, page=page, filename=filename)
+                    else:
+                        self.execute_by_custom(keyword=credit, page=page, filename=filename)
+                except AttributeError as e:
+                    # 当出现这个错误的时候，说明在当前的网站中没有查到这个公司，需要重新加入到队列中
+                    SCREENSHOT_UNDO_QUEUE.put(company)
+                    print(f"{company}在当前网站未找到")
+                    continue
+                except Exception as e:
+                    SCREENSHOT_UNDO_QUEUE.put(company)
+                    print(e)
+            page.close()
+            context.close()
+            browser.close()
+        except Exception as e:
+            print(e)
 
     def execute_by_custom(self, *args, **kwargs):
         pass

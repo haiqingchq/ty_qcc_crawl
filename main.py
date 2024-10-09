@@ -52,7 +52,9 @@ def main():
         if OPTION == 1:
             actuator.write_history(excel_path=excel_path)
             # 只有在进行截图爬取的时候才需要进行这个操作，因为社会信用统一代码可以直接通过查看文件就能看到未完成的公司信息
-            actuator.check_un_crawled_companies(excel_path=excel_path)
+
+        actuator.check_un_crawled_companies(excel_path=excel_path)
+
         if attempts == max_attempts:
             print("\033[91m达到最大尝试次数，任务无法启动")
         ty_crawler.excel_handler.save_company_info(CREDIT_DO_QUEUE)
