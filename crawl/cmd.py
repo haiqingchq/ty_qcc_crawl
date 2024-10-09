@@ -118,4 +118,3 @@ class Actuator:
         for company in undo_companies:
             undo_queue.put(company)
         return undo_queue
-

@@ -2,6 +2,7 @@
 import os
 from datetime import datetime
 from tempfile import gettempdir
+
 current_datetime = datetime.now()
 FILENAME = current_datetime.strftime("%H-%M-%S")
 DIRNAME = current_datetime.strftime("%Y-%m-%d")
@@ -153,3 +154,8 @@ BUSINESS_NAME = "借款人企业名称"
 CREDIT_NAME = "社会统一信用代码"
 # 命名
 NAMED = "命名"
+
+#
+from queue import Queue
+
+UNDO_QUEUE = Queue()

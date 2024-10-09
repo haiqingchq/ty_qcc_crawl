@@ -35,6 +35,14 @@ class ExcelHandler:
         """
         return self.df[BUSINESS_NAME]
 
+    def get_empty_credit_rows(self):
+        """
+        获取到
+        :return:
+        """
+        empty_credit_rows = self.df[self.df[CREDIT_NAME].isnull()]
+        return empty_credit_rows[BUSINESS_NAME].tolist()
+
     def get_info_by_company(self, company):
         """
         通过 公司名称，在 df 中获得一行数据
