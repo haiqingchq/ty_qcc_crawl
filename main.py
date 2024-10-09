@@ -2,10 +2,10 @@
 import os
 import time
 
-from config import CURRENT_ERR_PATH, OPTION
+from config import CURRENT_ERR_PATH, OPTION, CREDIT_DO_QUEUE
 from config import MAX_ATTEMPTS, ATTEMPT_DELAY
 from crawl.cmd import Actuator
-from crawl.common import is_excel_file, get_all_file_names
+from crawl.common import is_excel_file
 from crawl.qcc import QCCCreditCrawl, QCCScreenshotCrawl
 from crawl.ty import TyCreditCrawl, TYScreenshotCrawl
 
@@ -19,6 +19,9 @@ def main():
 
     while True:
         excel_path = input("\033[91m请输入excel文件的路径：")
+        if not excel_path.endswith('.xlsx') or not excel_path.endswith('.xls'):
+            excel_path = excel_path + '.xlsx'
+
         if os.path.exists(excel_path) and os.path.isfile(excel_path) and is_excel_file(excel_path):
             break
         else:
@@ -52,7 +55,7 @@ def main():
             actuator.check_un_crawled_companies(excel_path=excel_path)
         if attempts == max_attempts:
             print("\033[91m达到最大尝试次数，任务无法启动")
-
+        ty_crawler.excel_handler.save_company_info(CREDIT_DO_QUEUE)
         end_time = time.time()
         time_taken = end_time - start_time
         print(f'\033[91m共耗时：{time_taken:.1f}秒({time_taken / 60:.1f}分钟)')

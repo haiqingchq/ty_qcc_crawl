@@ -114,6 +114,31 @@ class QCCCrawlerBase(Crawler):
         ctx.close()
         bs.close()
 
+    def search_and_get_url(self, page: Page, keyword: str):
+        # 1、进入到搜索页面
+        page.goto(qcc_search_url)
+        page.wait_for_load_state("load")
+
+        # 2、可能跳出弹窗，如果跳出来的话，就关掉
+        if page.locator(".modal-close.campaign.aicon.qccdicon.icon-icon_guanbixx").is_visible():
+            page.locator(".modal-close.campaign.aicon.qccdicon.icon-icon_guanbixx").click()
+
+        # 3、在输入框中输入指定要搜索的内容
+        page.locator('#searchKey').click()
+        page.locator('#searchKey').fill(keyword)
+        page.locator('#searchKey').press("Enter")
+        page.wait_for_load_state("load")
+        time.sleep(DELAY)
+
+        # 4、在页面中获取到我们需要的截图的链接
+        html = page.content()
+        pattern = re.compile(qcc_search_target)
+        match = pattern.search(html)
+        if match:
+            return match.group()
+        else:
+            raise AttributeError
+
 
 class QCCCreditCrawl(CreditCrawl, QCCCrawlerBase):
     def get_credit_from_page(self, page: Page, url: str):
@@ -125,58 +150,14 @@ class QCCCreditCrawl(CreditCrawl, QCCCrawlerBase):
 
     def execute_by_custom(self, page: Page, keyword: str, *args, **kwargs):
         """已经登录"""
-        # 1、进入到搜索页面
-        page.goto(qcc_search_url)
-        page.wait_for_load_state("load")
 
-        # 2、可能跳出弹窗，如果跳出来的话，就关掉
-        if page.locator(".modal-close.campaign.aicon.qccdicon.icon-icon_guanbixx").is_visible():
-            page.locator(".modal-close.campaign.aicon.qccdicon.icon-icon_guanbixx").click()
-
-        # 3、在输入框中输入指定要搜索的内容
-        page.locator('#searchKey').click()
-        page.locator('#searchKey').fill(keyword)
-        page.locator('#searchKey').press("Enter")
-        page.wait_for_load_state("load")
-        time.sleep(DELAY)
-
-        # 4、在页面中获取到我们需要的截图的链接
-        html = page.content()
-        pattern = re.compile(qcc_search_target)
-        match = pattern.search(html)
-        if match:
-            next_url = match.group()
-            self.get_credit_from_page(page=page, url=next_url)
-        else:
-            # 在企查查中没有找到该企业
-            raise AttributeError
+        next_url = self.search_and_get_url(page=page, keyword=keyword)
+        credit = self.get_credit_from_page(page=page, url=next_url)
+        return credit
 
 
 class QCCScreenshotCrawl(ScreenshotCrawl, QCCCrawlerBase):
     def execute_by_custom(self, page: Page, keyword: str, filename: str, *args, **kwargs):
         """已经登录"""
-        # 1、进入到搜索页面
-        page.goto(qcc_search_url)
-        page.wait_for_load_state("load")
-
-        # 2、可能跳出弹窗，如果跳出来的话，就关掉
-        if page.locator(".modal-close.campaign.aicon.qccdicon.icon-icon_guanbixx").is_visible():
-            page.locator(".modal-close.campaign.aicon.qccdicon.icon-icon_guanbixx").click()
-
-        # 3、在输入框中输入指定要搜索的内容
-        page.locator('#searchKey').click()
-        page.locator('#searchKey').fill(keyword)
-        page.locator('#searchKey').press("Enter")
-        page.wait_for_load_state("load")
-        time.sleep(DELAY)
-
-        # 4、在页面中获取到我们需要的截图的链接
-        html = page.content()
-        pattern = re.compile(qcc_search_target)
-        match = pattern.search(html)
-        if match:
-            next_url = match.group()
-            self.screenshot(url=next_url, page=page, filename=filename)
-        else:
-            # 在企查查中没有找到该企业
-            raise AttributeError
+        next_url = self.search_and_get_url(page=page, keyword=keyword)
+        self.screenshot(url=next_url, page=page, filename=filename)

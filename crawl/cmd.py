@@ -1,11 +1,10 @@
 import os.path
-import time
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 from playwright.sync_api import sync_playwright
 
-from config import LOGIN_TAP
+from config import LOGIN_TAP, CREDIT_UNDO_QUEUE
 from config import SCREENSHOT_OUT_DIR, NAMED, BUSINESS_NAME, SCREENSHOT_HISTORY_PATH
 from config import UNDO_PATH, FILENAME
 from crawl.base import Crawler
@@ -68,7 +67,7 @@ class Actuator:
         self.login()
         self.start_crawlers()
 
-    def thread_start_crawlers(self):
+    def thread_start_crawlers(self, thread_num):
         self.ty_crawler.thread_run()
         self.qcc_crawler.thread_run()
 
@@ -83,8 +82,12 @@ class Actuator:
         """
         self.login()
         with ThreadPoolExecutor() as executor:
-            for _ in range(2):
-                executor.submit(self.thread_start_crawlers)
+            # for _ in range(3):
+            #     executor.submit(self.thread_start_crawlers)
+            executor.map(self.ty_crawler.thread_run, range(3))
+
+        with ThreadPoolExecutor() as executor:
+            executor.map(self.qcc_crawler.thread_run, range(3))
 
     def close(self):
         self.playwright.stop()
@@ -127,15 +130,8 @@ class Actuator:
 
         :return:
         """
-        # from queue import Queue
-        # # 1、获取所有的公司列表
-        # all_companies = self.ty_crawler.excel_handler.get_all_companies()
-        # # 2、获取已经做完了
-        # history_companies = self.ty_crawler.read_history_list()
-        # # 3、获得到未作的
-        # undo_companies = list(set(all_companies) - set(history_companies))
-        # # 4、将未作的放到queue中
-        from config import UNDO_QUEUE
         for company in self.ty_crawler.excel_handler.get_empty_credit_rows():
-            UNDO_QUEUE.put(company)
-        return UNDO_QUEUE
+            CREDIT_UNDO_QUEUE.put(company)
+        CREDIT_UNDO_QUEUE.put(0)
+        print(f"本次任务总量: {CREDIT_UNDO_QUEUE.qsize()}")
+        return CREDIT_UNDO_QUEUE

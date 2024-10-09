@@ -158,4 +158,5 @@ NAMED = "命名"
 #
 from queue import Queue
 
-UNDO_QUEUE = Queue()
+CREDIT_UNDO_QUEUE = Queue()
+CREDIT_DO_QUEUE = Queue()

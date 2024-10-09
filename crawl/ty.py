@@ -134,9 +134,13 @@ class TyCreditCrawl(CreditCrawl, TYCrawlerBase):
     def execute_by_custom(self, page: Page, keyword: str, *args, **kwargs):
         """已经登录"""
         # 1、尝试进入搜索页面
-        next_url = self.search_and_get_url(page=page, keyword=keyword)
+        self.search_and_get_url(page=page, keyword=keyword)
         # 3、跳转链接，并截图
-        credit = self.get_credit_from_page(url=next_url, page=page)
+        # print(page.content())
+        # time.sleep(10000)
+        credit = (page.query_selector(
+            '//div[@id="page-container"]/div/div[2]/div/div[2]/div[2]/div/div/div[3]/div[2]/div[3]/div[4]/span')
+                  .text_content())
         return credit
 
 

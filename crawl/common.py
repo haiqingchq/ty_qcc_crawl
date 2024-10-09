@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from queue import Queue
 
 import pandas as pd
 
@@ -93,7 +94,7 @@ class ExcelHandler:
         return business_list, credit_list, filename_list
 
     # 将查询到的社会统一信用代码存入到Excel文件中
-    def save_company_info(self, target_dict: [str, str]):
+    def save_company_info(self, target_dict):
         """
         :param target_dict:
         :return:
@@ -101,9 +102,17 @@ class ExcelHandler:
         # 1、读取文件
         df = pd.read_excel(self.excel_path)
         # 2、将内容更新到文件中
-        for business, credit in target_dict.items():
-            index = df.loc[df[BUSINESS_NAME] == business].index[0]
-            df.at[index, CREDIT_NAME] = credit
+        if isinstance(target_dict, dict):
+            for business, credit in target_dict.items():
+                index = df.loc[df[BUSINESS_NAME] == business].index[0]
+                df.at[index, CREDIT_NAME] = credit
+
+        elif isinstance(target_dict, Queue):
+            while not target_dict.empty():
+                target = target_dict.get()
+                for business, credit in target.items():
+                    index = df.loc[df[BUSINESS_NAME] == business].index[0]
+                    df.at[index, CREDIT_NAME] = credit
 
         # 3、将文件输出到指定位置
         df.to_excel(self.excel_path, index=False)
