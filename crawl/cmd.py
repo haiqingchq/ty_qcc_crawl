@@ -40,8 +40,8 @@ class Actuator:
 
     def start_crawlers(self):
         print("任务已启动，正在爬取任务……")
-        self.ty_crawler.run(self.playwright)
-        self.qcc_crawler.run(self.playwright)
+        self.ty_crawler.run()
+        self.qcc_crawler.run()
 
     def start(self):
         """

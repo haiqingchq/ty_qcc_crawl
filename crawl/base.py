@@ -20,7 +20,7 @@ from crawl.common import ExcelHandler
 
 class StartInterface(ABC):
     @abstractmethod
-    def run(self, playwright: Playwright):
+    def run(self):
         """
             针对不同的需求，会有不一样的启动方式，粗粒度控制
         :return:
@@ -57,10 +57,9 @@ class Crawler(StartInterface):
     def login_by_password(self, playwright: Playwright):
         raise NotImplementedError
 
-    def init_page(self, playwright: Playwright):
+    def init_page(self):
         """
         初始化一个携带登录状态信息的page
-        :param playwright:
         :return:
         """
         playwright = sync_playwright().start()
@@ -71,7 +70,7 @@ class Crawler(StartInterface):
         pg.add_init_script(self.stealth_js)
         return pg, bs, ctx
 
-    def run(self, playwright: Playwright):
+    def run(self):
         pass
 
     def execute_by_custom(self, *args, **kwargs):
@@ -90,8 +89,8 @@ class Crawler(StartInterface):
 
 
 class CreditCrawl(Crawler):
-    def run(self, playwright: Playwright):
-        page, browser, context = self.init_page(playwright=playwright)
+    def run(self):
+        page, browser, context = self.init_page()
         history_list = self.read_history_list()
         file = open(CREDITS_HISTORY_PATH, 'a', encoding='utf-8')
 
@@ -144,8 +143,8 @@ class CreditCrawl(Crawler):
 
 
 class ScreenshotCrawl(Crawler):
-    def run(self, playwright: Playwright):
-        page, browser, context = self.init_page(playwright=playwright)
+    def run(self):
+        page, browser, context = self.init_page()
         history_list = self.read_history_list()
         file = open(SCREENSHOT_HISTORY_PATH, 'a', encoding='utf-8')
 
