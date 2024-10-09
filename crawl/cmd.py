@@ -1,12 +1,15 @@
 import os.path
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 from playwright.sync_api import sync_playwright
 
 from config import LOGIN_TAP
+from config import SCREENSHOT_OUT_DIR, NAMED, BUSINESS_NAME, SCREENSHOT_HISTORY_PATH
 from config import UNDO_PATH, FILENAME
 from crawl.base import Crawler
+from crawl.common import get_all_file_names
 
 
 class Actuator:
@@ -24,6 +27,19 @@ class Actuator:
         self.qcc_crawler = qcc_crawler
         self.playwright = sync_playwright().start()
         self.get_undo_companies_list()
+
+    @staticmethod
+    def write_history(excel_path: str):
+        df = pd.read_excel(excel_path)
+        all_files = get_all_file_names(SCREENSHOT_OUT_DIR)
+        history_list = []
+        for file_name in all_files:
+            business = df[df[NAMED] == file_name][BUSINESS_NAME].tolist()[0]
+            history_list.append(business)
+        file = open(SCREENSHOT_HISTORY_PATH, 'w', encoding='utf-8')
+        for history_item in history_list:
+            file.write(f"{history_item}\n")
+        file.close()
 
     def login(self):
         print("\033[91m正在检查登录状态信息，请稍等...")
@@ -67,7 +83,7 @@ class Actuator:
         """
         self.login()
         with ThreadPoolExecutor() as executor:
-            for _ in range(3):
+            for _ in range(2):
                 executor.submit(self.thread_start_crawlers)
 
     def close(self):

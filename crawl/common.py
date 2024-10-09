@@ -6,6 +6,15 @@ import pandas as pd
 from config import OPTION, BUSINESS_NAME, CREDIT_NAME, NAMED
 
 
+def get_all_file_names(folder_path):
+    file_names = []
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            file = file.replace(".png", "")
+            file_names.append(file)
+    return file_names
+
+
 def is_excel_file(file_path):
     """
     判断当前文件是否是一个excel文件

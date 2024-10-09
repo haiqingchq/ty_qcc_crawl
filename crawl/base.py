@@ -69,7 +69,7 @@ class Crawler(StartInterface):
         ctx = bs.new_context(storage_state=self.cookie_path)
         pg = ctx.new_page()
         pg.add_init_script(self.stealth_js)
-        return pg
+        return pg, bs, ctx
 
     def run(self):
         pass
@@ -130,8 +130,14 @@ class CreditCrawl(Crawler):
         :return:
         """
         file = open(CREDITS_HISTORY_PATH, 'a', encoding='utf-8')
-        page = self.init_page()
+        page, browser, context = self.init_page()
+        count = 0
         while not UNDO_QUEUE.empty():
+            if count == 15:
+                count = 0
+                time.sleep(5)
+            count += 1
+
             company = UNDO_QUEUE.get()
             info_list = self.excel_handler.get_info_by_company(company=company)
             business, credit = info_list[0], info_list[1]
@@ -143,6 +149,9 @@ class CreditCrawl(Crawler):
                 # 当出现这个错误的时候，说明在当前的网站中没有查到这个公司，需要重新加入到队列中
                 UNDO_QUEUE.put(company)
                 continue
+        file.close()
+        context.close()
+        browser.close()
 
     def execute_by_custom(self, *args, **kwargs):
         pass
@@ -167,7 +176,6 @@ class ScreenshotCrawl(Crawler):
     def run(self):
         page, browser, context = self.init_page()
         history_list = self.read_history_list()
-        file = open(SCREENSHOT_HISTORY_PATH, 'a', encoding='utf-8')
 
         business_list, credit_list, filename_list = self.excel_handler.get_company_info_v2()
 
@@ -179,7 +187,6 @@ class ScreenshotCrawl(Crawler):
                         self.execute_by_custom(keyword=business, page=page, filename=filename)
                     else:
                         self.execute_by_custom(keyword=credit, page=page, filename=filename)
-                    file.write(f'{business}\n')
                 except AttributeError as e:
                     """
                         出现这个错误的情况有两种：
@@ -189,7 +196,6 @@ class ScreenshotCrawl(Crawler):
                     continue
             else:
                 continue
-        file.close()
         context.close()
         browser.close()
 
@@ -198,10 +204,18 @@ class ScreenshotCrawl(Crawler):
         多线程启动
         :return:
         """
-        file = open(CREDITS_HISTORY_PATH, 'a', encoding='utf-8')
-        page = self.init_page()
+        page, browser, context = self.init_page()
+        history_list = self.read_history_list()
+        count = 0
         while not UNDO_QUEUE.empty():
+            # 每执行15次的时候休息5秒钟左右，防止被检测
             company = UNDO_QUEUE.get()
+            if company in history_list:
+                continue
+            if count == 5:
+                count = 0
+                time.sleep(10)
+            count += 1
             info_list = self.excel_handler.get_info_by_company(company=company)
             business, credit, filename = info_list[0], info_list[1], info_list[2]
             try:
@@ -209,11 +223,13 @@ class ScreenshotCrawl(Crawler):
                     self.execute_by_custom(keyword=business, page=page, filename=filename)
                 else:
                     self.execute_by_custom(keyword=credit, page=page, filename=filename)
-                file.write(f"{company}\n")
             except AttributeError as e:
                 # 当出现这个错误的时候，说明在当前的网站中没有查到这个公司，需要重新加入到队列中
                 UNDO_QUEUE.put(company)
                 continue
+
+        context.close()
+        browser.close()
 
     def execute_by_custom(self, *args, **kwargs):
         pass
@@ -231,6 +247,8 @@ class ScreenshotCrawl(Crawler):
         page.goto(url)
         page.wait_for_load_state("load")
         time.sleep(SCREENSHOT_DELAY)
+        # 增加操作：等待页面上面出现 工商信息 后，进行后续操作
+        page.wait_for_url(url)
         page.mouse.wheel(0, 800)
         time.sleep(SCREENSHOT_DELAY)
         page.screenshot(path=str(os.path.join(base_path, SCREENSHOT_OUT_PATH.format(filename))))

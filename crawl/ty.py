@@ -146,3 +146,4 @@ class TYScreenshotCrawl(ScreenshotCrawl, TYCrawlerBase):
         next_url = self.search_and_get_url(page=page, keyword=keyword)
         # 3、跳转链接，并截图
         self.screenshot(url=next_url, page=page, filename=filename)
+        time.sleep(1)

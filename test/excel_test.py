@@ -28,4 +28,7 @@ def test_get_company_by_name():
 
 
 if __name__ == '__main__':
-    test_get_company_by_name()
+    from crawl.common import get_all_file_names
+    from config import SCREENSHOT_OUT_DIR
+    print(get_all_file_names(SCREENSHOT_OUT_DIR))
+
